@@ -36,23 +36,23 @@ class SlamDataRecorder(Node):
     def callback(self, color_msg, depth_msg, odom_msg):
         # color save
         cv2_img = self.cb.imgmsg_to_cv2(color_msg)
-        cv2.imwrite(f'/home/joonyeol/ros2_ws/src/extrinsic/dataset/color/{self.count}.jpg', cv2_img)
+        cv2.imwrite(f'/home/simjoonyeol/ros2_ws/src/extrinsic/dataset/color/{self.count}.jpg', cv2_img)
         self.get_logger().info(f'Color Saved: {self.count}')
 
         # depth save
         cv2_img = self.cb.imgmsg_to_cv2(depth_msg)
-        cv2.imwrite(f'/home/joonyeol/ros2_ws/src/extrinsic/dataset/depth/{self.count}.png', cv2_img)
+        cv2.imwrite(f'/home/simjoonyeol/ros2_ws/src/extrinsic/dataset/depth/{self.count}.png', cv2_img)
         self.get_logger().info(f'Depth Saved: {self.count}')
 
         # tf save
-        qx = odom_msg.pose.pose.orientation.x
+        qx = odom_msg.pose.pose.orientation.z
         qy = odom_msg.pose.pose.orientation.y
-        qz = odom_msg.pose.pose.orientation.z
+        qz = -odom_msg.pose.pose.orientation.x
         qw = odom_msg.pose.pose.orientation.w
 
-        tx = odom_msg.pose.pose.position.x
+        tx = odom_msg.pose.pose.position.z
         ty = odom_msg.pose.pose.position.y
-        tz = odom_msg.pose.pose.position.z
+        tz = -odom_msg.pose.pose.position.x
 
         transformation_matrix = np.array(
             [[1.0 - 2.0 * qy * qy - 2.0 * qz * qz, 2.0 * qx * qy - 2.0 * qz * qw, 2.0 * qx * qz + 2.0 * qy * qw, tx],
@@ -60,7 +60,7 @@ class SlamDataRecorder(Node):
              [2.0 * qx * qz - 2.0 * qy * qw, 2.0 * qy * qz + 2.0 * qx * qw, 1.0 - 2.0 * qx * qx - 2.0 * qy * qy, tz],
              [0.0, 0.0, 0.0, 1.0]])
 
-        np.savetxt(f'/home/joonyeol/ros2_ws/src/extrinsic/dataset/pose/{self.count}.text', transformation_matrix,
+        np.savetxt(f'/home/simjoonyeol/ros2_ws/src/extrinsic/dataset/pose/{self.count}.txt', transformation_matrix,
                    fmt='%f')
         self.get_logger().info(f'Odom Saved: {self.count}')
 
@@ -68,11 +68,11 @@ class SlamDataRecorder(Node):
 
 
 def main(args=None):
-    if not os.path.exists('/home/joonyeol/ros2_ws/src/extrinsic/dataset'):
-        os.mkdir('/home/joonyeol/ros2_ws/src/extrinsic/dataset')
+    if not os.path.exists('/home/simjoonyeol/ros2_ws/src/extrinsic/dataset'):
+        os.mkdir('/home/simjoonyeol/ros2_ws/src/extrinsic/dataset')
         folder_list = ['color', 'depth', 'intrinsic', 'pose']
         for folder in folder_list:
-            os.mkdir(f'/home/joonyeol/ros2_ws/src/extrinsic/dataset/{folder}')
+            os.mkdir(f'/home/simjoonyeol/ros2_ws/src/extrinsic/dataset/{folder}')
 
     rclpy.init(args=args)
     slam_data_recorder = SlamDataRecorder()
